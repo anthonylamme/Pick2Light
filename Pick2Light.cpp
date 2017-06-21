@@ -1,16 +1,7 @@
-#ifdef __AVR
-  #include <avr/pgmspace.h>
-#elif defined(ESP8266)
-  #include <pgmspace.h>
-#endif
+#include <avr/pgmspace.h>
 
 #include "Pick2Light.h"
-
-#if ARDUINO >= 100
 #include "Arduino.h"
-#else
-#include "WProgram.h"
-#endif
 
 
 #ifndef _BV
@@ -72,47 +63,120 @@ void Pick2Light::begin(void){
         pinMode(8, INPUT,MCP23017_ADDR[i]); //Button 8
     }
 }
-
+void Pick2Light::testBus(int whichBus){
+    byte error,address;
+    int Dev=0;
+    uint8_t Devices[DEVSIZE];
+    uint8_t nDevices[127];
+    for(int i=0;i<MCP23017_AMOUNT;i++){
+        Devices[i]=MCP23017_ADDR[i];
+    }
+    for(int i=0;i<SEGMENT_AMOUNT;i++){
+        Devices[i+MCP23017_AMOUNT]=Display_i2c_addr[i];
+    }
+    switch(whichBus){
+        case 0:{
+            for(address = 1; address < 127; address++ )
+            {
+                i2c0.beginTransmission(address);
+                error = i2c0.endTransmission();
+                if (error == 0)
+                {
+                    Serial.print(F("I2C1 device found at address 0x"));
+                    if (address<16)
+                        Serial.print(F("0"));
+                    Serial.print(address,HEX);
+                    Serial.println(F("  !"));
+                    
+                    nDevices[address]=address;
+                    Dev++;
+                }
+                else if (error==4)
+                {
+                    Serial.print(F("Unknow error at address 0x"));
+                    if (address<16)
+                        Serial.print("0");
+                    Serial.println(address,HEX);
+                }
+            }
+            if (Dev == 0)
+                Serial.println("No I2C devices found\n");
+            else 
+                Serial.println("done\n");
+            break;
+        }
+        case 1:{
+            for(address = 1; address < 127; address++ )
+            {
+                i2c1.beginTransmission(address);
+                error = i2c1.endTransmission();
+                if (error == 0)
+                {
+                    Serial.print(F("I2C1 device found at address 0x"));
+                    if (address<16)
+                        Serial.print(F("0"));
+                    Serial.print(address,HEX);
+                    Serial.println(F("  !"));
+            
+                    Dev++;
+                }
+                else if (error==4)
+                {
+                    Serial.print(F("Unknow error at address 0x"));
+                    if (address<16)
+                        Serial.print("0");
+                    Serial.println(address,HEX);
+                }
+            }
+            if (Dev == 0)
+                Serial.println("No I2C devices found\n");
+            else 
+                Serial.println("done\n");
+            break;
+        }
+        case 2:{
+            for(address = 1; address < 127; address++ )
+            {
+                i2c2.beginTransmission(address);
+                error = i2c2.endTransmission();
+                if (error == 0)
+                {
+                    Serial.print(F("I2C1 device found at address 0x"));
+                    if (address<16)
+                        Serial.print(F("0"));
+                    Serial.print(address,HEX);
+                    Serial.println(F("  !"));
+            
+                    Dev++;
+                }
+                else if (error==4)
+                {
+                    Serial.print(F("Unknow error at address 0x"));
+                    if (address<16)
+                        Serial.print("0");
+                    Serial.println(address,HEX);
+                }
+            }
+            if (Dev == 0)
+                Serial.println("No I2C devices found\n");
+            else 
+                Serial.println("done\n");
+            break;
+        }
+        default:{
+            Serial.println("No Bus by that number ERROR");
+            break;
+        }
+    }
+}
 /*
-needs work
+Tests connection with I2C Channels
 */
 void Pick2Light::testConnection(void){
-    byte error, address;
-    int nDevices;
-    
     Serial.println(F("Scanning I2C bus (7-bit addresses) ..."));
-    
-    nDevices = 0;
-    for(address = 1; address < 127; address++ )
-    {
-        // The i2c_scanner uses the return value of
-        // the Write.endTransmisstion to see if
-        // a device did acknowledge to the address.
-        Wire.beginTransmission(address);
-        error = Wire.endTransmission();
-        
-        if (error == 0)
-        {
-            Serial.print(F("I2C device found at address 0x"));
-            if (address<16)
-            Serial.print(F("0"));
-            Serial.print(address,HEX);
-            Serial.println(F("  !"));
-    
-            nDevices++;
-        }
-        else if (error==4)
-        {
-            Serial.print(F("Unknow error at address 0x"));
-            if (address<16)
-            Serial.print("0");
-            Serial.println(address,HEX);
-        }    
+    for(int i =0;i<3;i++){
+        testBus(i);
     }
-    if (nDevices == 0)
-    Serial.println("No I2C devices found\n");
-    else 
-    Serial.println("done\n");
 }
 
 /*
