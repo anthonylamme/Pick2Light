@@ -60,7 +60,11 @@
 #define MCP23017_GPIOB 0x13
 #define MCP23017_OLATB 0x15
 
-#define MCP23017_INT_ERR 255
+#define MCP23017_INT_ERR
+ 
+#define DEVSIZE 11
+#define MCP23017_AMOUNT 3
+#define SEGMENT_AMOUNT 8
 
 static const uint8_t numbertable[] = {
 	0x3F, /* 0 */
@@ -102,6 +106,7 @@ class Pick2Light{
                    uint8_t _sda3,uint8_t _scl3);
         //Backpack
         void begin(void);
+        void testBus(int);
         void testConnection(void);
         
         void writeToDisplay(int ItemList[],int size);
@@ -160,10 +165,7 @@ class Pick2Light{
         
         uint8_t readRegister(uint8_t addr,uint8_t i2caddr);
         void writeRegister(uint8_t addr, uint8_t value, uint8_t i2caddr);
-        /**
-        * Utility private method to update a register associated with a pin (whether port A/B)
-        * reads its value, updates the particular bit, and writes its value.
-        */
+
         void updateRegisterBit(uint8_t p, uint8_t pValue, uint8_t portAaddr, uint8_t portBaddr, uint8_t i2caddr);
 };
 #endif
