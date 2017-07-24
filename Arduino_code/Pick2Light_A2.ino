@@ -35,7 +35,7 @@ void setup() {
   for (int i = 0; i < LISTSIZE; i++) {
     ItemList[i] = 0;
   }
-  Wire.begin(A1);
+  Wire.begin(A2);
   Wire.onReceive(recieveMasterCommand);
 }
 
