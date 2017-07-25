@@ -55,5 +55,5 @@ if slack_client.rtm_connect();
                         channel=message['channel'],
                         text="Sending Report"
                         as_user =True)
-                        SendDataOp(path
+                        SendDataOp(path)
             time.sleep(1)
