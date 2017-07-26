@@ -13,9 +13,9 @@ import BotOps as OPS
 
 from slackclient import SlackClient
 
-P2L_Token="TOKEN"
+P2L_Token="xoxb-218658603927-YryWXgMNzDkKZh6pNMOFgwl6"
 myName="pick2light_test2"
-path="/home/pi/test.csv"
+path="/home/pi/Scripts/RoboticArmCode/RpiAddtion/Bash/Data/test.csv"
 slack_client =SlackClient(P2L_Token)
 
 user_list = slack_client.api_call("users.list")
@@ -110,7 +110,7 @@ if slack_client.rtm_connect():
                     slack_client.api_call(
                         "chat.postMessage",
                         channel=message['channel'],
-                        text="\n Always happy to help\n Type: shutdown to shutdown \n Type: restart to restart\n Type: send to recieve report\n Type: CPU to recieve percent of CPU used\n Type: memory or ram to recieve percent of ram used\n Type: temperture to recieve temperture data",
+                        text="\n Always happy to help\n Type: shutdown to shutdown \n Type: restart to restart\n Type: send to recieve report\n Type: CPU to recieve percent of CPU used\n Type: memory or ram to recieve percent of ram used\n Type: temperture to recieve temperture data \n cancel to cancel shutdown",
                         as_user=True)
                     
                 if re.match(r'.*(cancel).*',message_text,re.IGNORECASE):
