@@ -13,7 +13,7 @@ import BotOps as OPS
 
 from slackclient import SlackClient
 
-P2L_Token="xoxb-218658603927-YryWXgMNzDkKZh6pNMOFgwl6"
+P2L_Token=""
 myName="pick2light_test2"
 path="/home/pi/Scripts/RoboticArmCode/RpiAddtion/Bash/Data/test.csv"
 slack_client =SlackClient(P2L_Token)
