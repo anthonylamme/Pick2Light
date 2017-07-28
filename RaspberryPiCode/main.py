@@ -1,4 +1,4 @@
-import Raspberry_pi
+import Raspberry_pi as P2L
 import time as t
 from os import path
 
@@ -6,10 +6,9 @@ Quantatity=[]#quantatity
 Lights=[]#23 light segment
 sendLights=[]#3 light values being sent
 #File pathways
-ItemListpathway='C:\\Users\\ECPROD\Desktop\\ProcessCompleteTesting.csv'#CSV for item array
-JSONpathway='C:\\Users\\ECPROD\\Desktop\\Learning\\Example.json'    #json file to pull from network
-filepathway= 'C:\\Users\\ECPROD\\Desktop\\Learning\\' 
-
+ItemListpathway='/home/pi/P2LightData/ItemList.csv'#CSV for item array
+JSONpathway='/home/pi/P2LightData/JSONData/Order.json'#json file to pull from network
+filepathway='/home/pi/P2LightData/Data' #file to send when asked
 
 """
 gpioSetup()
@@ -22,13 +21,13 @@ checkArduino()
 resetArduino(lights,Quantatity,Maplights)
 """
 
-gpioSetup()
-pullData(ItemListpathway)
-resetList()
+P2L.gpioSetup()
+P2L.pullData(ItemListpathway)
+P2L.resetList()
 date=t.localtime(t.time())
 
-outputDate='%d_%d_%d',%(date[1],date[2],(date[0]%100))
-filename='%s.txt'%outputDate)
+outputDate='%d_%d_%d'%(date[1],date[2],(date[0]%100))
+filename='%s.csv'%outputDate
 
 #filename mm_dd_yy.txt
 #attach interrupt to getInvoice
@@ -37,18 +36,18 @@ filename='%s.txt'%outputDate)
 
 while(True):
     date=t.localtime(t.time())
-    checkDate='%d_%d_%d',%(date[1],date[2],(date[0]%100))
+    checkDate='%d_%d_%d'%(date[1],date[2],(date[0]%100))
     
-    getInvoice(JSONpathway)
+    P2L.getInvoice(JSONpathway)
     start = t.clock()
-    theSum=sendToArduinos(Lights,sendLights,Quantatity)
-    while(checkArduino):
+    theSum=P2L.sendToArduinos(Lights,sendLights,Quantatity)
+    while(P2L.checkArduino):
         t.sleep(0.01)
     end = t.clock()
-    resetArduino(sendLights,Quantatity,Lights)
+    P2L.resetArduino(sendLights,Quantatity,Lights)
     if not(path.isfile(filepathway+filename)):
         f = open(filepathway+name, "w")
-        f.write("%s,%d,%d,%d \n" % (outputDate,operator, theSum, (end - start))
+        f.write("%s,%d,%d,%d, \n" % (outputDate,operator, theSum, (end - start)))
         """
         operator input comes from JSON file theSum is a summation
          of the number of items that is returned from sendToArduino function
@@ -56,5 +55,5 @@ while(True):
         f.close()
     else:
         f = open(filepathway+name, 'a') 
-        f.write("%s,%d,%d,%d \n" % (checkDate, operator, (end - start), theSum,)
+        f.write("%s,%d,%d,%d,\n" %(checkDate,operator,theSum,(end - start)))
         f.close()

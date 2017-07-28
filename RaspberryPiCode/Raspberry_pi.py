@@ -26,7 +26,7 @@ import RPi.GPIO as GPIO##Runs GPIO
 import csv
 import json##Library to handle Json files
 ##Pin Definitions
-bus=smbus.SMBus(0)
+bus=smbus.SMBus(1)
 GPIO.setmode(GPIO.BOARD)
 
 ##arduino addresses
@@ -41,8 +41,7 @@ turnOff=0x00#reset lights
 
 
 def gpioSetup():
-    for x in range(0,len(arduinoStatus)):
-        GPIO.setup(arduinoStatus[x],GPIO.INPUT)
+    GPIO.setup(arduinoStatus,GPIO.IN)
 """
 writes to Arduinos, needs address of arduino and the opcode that will be sent
 input: address and operation code
