@@ -11,6 +11,8 @@ JSONpathway='/home/pi/P2LightData/JSONData/Order.json'#json file to pull from ne
 filepathway='/home/pi/P2LightData/Data' #file to send when asked
 
 """
+Step Process:
+
 gpioSetup()
 writeCommand(address,opcode,light,Quantatity,Maplights)
 pullData()
