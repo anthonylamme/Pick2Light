@@ -1,3 +1,7 @@
+/*
+This the the prime Arudino Code used to create the copies comments on here will be the same throughout system
+*/
+
 #include <Pick2Light.h>
 
 #define SCL1 8
@@ -7,13 +11,13 @@
 #define SCL3 6
 #define SDA3 5
 
-#define STATUS1 12
+#define STATUS1 12 //pin that will send complete message to RPi 
 
 Pick2Light check= Pick2Light(SDA1,SCL1,SDA2,SCL2,SDA3,SCL3);
-
+//number of items that will be  placed in list
 #define LISTSIZE 24
 int ItemList[LISTSIZE];
-
+//bitmasks to determine which button was placed
 #define bitmask1 0x01
 #define bitmask2 0x02
 #define bitmask3 0x04
@@ -22,11 +26,14 @@ int ItemList[LISTSIZE];
 #define bitmask6 0x20
 #define bitmask7 0x40
 #define bitmask8 0x80
-
+//polling varibles
 uint8_t old1 = 0x00;
 uint8_t old2 = 0x00;
 uint8_t old3 = 0x00;
-
+/*
+Setup is the Arduino standard setup function. Creates the PICK2LIGHT obj, sents status pin to output
+creates Array, and create i2c communication with RPi
+*/
 void setup() {
   // put your setup code here, to run once:
   check.begin();
@@ -38,13 +45,15 @@ void setup() {
   Wire.begin(A1);
   Wire.onReceive(recieveMasterCommand);
 }
-
+/*
+loop will loop indfinatly and will be only interrupted when recieving a command from the RPi
+*/
 void loop() {
-  // put your main code here, to run repeatedly:
+  //checks button status of MCP23017s
   uint8_t new1 = check.readGPIO(1,MCP23017_ADDR[0]);
   uint8_t new2 = check.readGPIO(1,MCP23017_ADDR[1]);
   uint8_t new3 = check.readGPIO(1,MCP23017_ADDR[2]);
-
+  //if there is a change in the first MCP then it will perform the next task
   if (old1 != new1) {
     old1 = new1;
     new1 = 0;
@@ -73,6 +82,7 @@ void loop() {
       Buttons(7);
     }
   }
+  //if there is a change in the second MCP then it will perform the next task
   if (old2 != new2) {
     old2 = new2;
     new2 = 0;
@@ -101,6 +111,7 @@ void loop() {
       Buttons(15);
     }
   }
+  //if there is a change in the third MCP then it will perform the next task
   if (old3 != new3) {
     old3 = new3;
     new3 = 0;
@@ -129,10 +140,16 @@ void loop() {
       Buttons(23);
     }
   }
+  //at the end of each cycle of checks write to the display and send status wait 100 milisecond before going again
   writeToDisplay();
   sendStatus();
   delay(100);
 }
+/*
+RecieveMasterCommand function will read in data sent from the RPi Master. The data needs to be sent in the order of 
+Operation Code, light bit number for first 8,light bit number for second 8,light bit number for third 8, Then the number of 
+each item needed in the Arduino's area
+*/
 void recieveMasterCommand() {
   uint8_t opcode = Wire.read();
   uint8_t lights1 = Wire.read();
@@ -156,13 +173,17 @@ void recieveMasterCommand() {
       }
   }
 }
-//status:complete
+/*
+turnOnLight takes in the bit numbers for the 24 lights and turns on the ones that are needed to be turned on.
+*/
 void turnOnLights(uint8_t lights1, uint8_t lights2, uint8_t lights3) {
   check.writeGPIOAB(lights1,MCP23017_ADDR[0]);//maybe << 8
   check.writeGPIOAB(lights2,MCP23017_ADDR[1]);
   check.writeGPIOAB(lights3,MCP23017_ADDR[2]);
 }
-//status not complete
+/*
+sendStatus will set status pin to high which will signal the RPi that the arduino is finished and waiting for reset
+*/
 void sendStatus() {
   //port A is Buttons (0)
   if (check.readGPIO(0,MCP23017_ADDR[0]) == 0 && check.readGPIO(0,MCP23017_ADDR[1]) == 0 && check.readGPIO(0,MCP23017_ADDR[2]) == 0) {
@@ -174,7 +195,9 @@ void sendStatus() {
   }
   
 }
-//status:Complete
+/*
+clearEverything will clear all lights and set the itemList to 0 and change the status pin to 0
+*/
 void clearEverything() {
   check.writeGPIOAB(0x00,MCP23017_ADDR[0]);
   check.writeGPIOAB(0x00,MCP23017_ADDR[1]);
@@ -184,7 +207,10 @@ void clearEverything() {
   }
   digitalWrite(STATUS1, LOW);
 }
-
+/*
+turnOffLight needs a int input which will be the light that needs to be turned off because there is no more items to pick from
+that bin.
+*/
 void turnOffLight(int i) {
   switch (i) {
     case 0: {
@@ -290,6 +316,9 @@ void turnOffLight(int i) {
       }
   }
 }
+/*
+Buttons needs a input for which button was pressed. This function is used to decrease the itemlist and turn off light if item list is 0
+*/
 void Buttons(int i)
 {
   switch (i)
@@ -464,6 +493,9 @@ void Buttons(int i)
       }
   }
 }
+/*
+writeToDisplay will write information to the Display after its been updated after each cycle
+*/
 void writeToDisplay(){
     uint8_t i2count=0;
     uint8_t addcount=0;
