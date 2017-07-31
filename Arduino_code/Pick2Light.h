@@ -1,10 +1,15 @@
+/*
+Header file for library to control Arduinos 
+*/
+
 #ifndef Pick2Light_h
 #define Pick2Light_h
 
-#include <Wire.h>
-#include <SlowSoftWire.h>
+#include <Wire.h> //normal i2c library
+#include <SlowSoftWire.h> //software i2c library
 
-#define A1 0x03
+//i2c address for adruinos
+#define A1 0x03 
 #define A2 0x04
 #define A3 0x05
 #define A4 0x06
@@ -12,7 +17,7 @@
 #define A6 0x08
 #define A7 0x09
 #define A8 0x10
-
+//7 segment display definitions for Commands
 #define LED_ON 1
 #define LED_OFF 0
 
@@ -31,7 +36,7 @@
 #define OCT 8
 #define BIN 2
 #define BYTE 0
-
+//MCP23017 base address
 #define MCP23017_ADDRESS 0x20
 
 // registers
@@ -61,11 +66,11 @@
 #define MCP23017_OLATB 0x15
 
 #define MCP23017_INT_ERR
- 
+//used for error checking 
 #define DEVSIZE 11
 #define MCP23017_AMOUNT 3
 #define SEGMENT_AMOUNT 8
-
+//number table for 7 segment displays do not change
 static const uint8_t numbertable[] = {
 	0x3F, /* 0 */
 	0x06, /* 1 */
@@ -84,6 +89,7 @@ static const uint8_t numbertable[] = {
 	0x79, /* E */
 	0x71, /* F */
 };
+//address list for displays
 static const uint8_t Display_i2c_addr[]={
     0x70,
     0x71,
@@ -94,6 +100,7 @@ static const uint8_t Display_i2c_addr[]={
     0x76,
     0x77,
 };
+//address lists for MCP23017
 static const uint8_t MCP23017_ADDR[]={
     0x00,
     0x01,
