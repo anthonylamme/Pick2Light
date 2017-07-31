@@ -1,1 +1,28 @@
-Will Add soon
+Pick2Light system Version 1.0
+-SlackBot Version 1.0
+
+The system was designed to run with 182 LEDs, 182 Buttons and 182 7 Segement displays. To control this amount the system was spilt into 8 arudino
+controlled subsections with a Raspberry Pi to controll the entire system. In doing this the solution simplified the number of items being controlled 
+by a single microprocessor from 546 items to just 72. The idea of the system was that the Raspberry Pi would recieve the order information in the form 
+of a JSON file which will be sent from the website server. From that JSON file the RPi will decide which arduino and which lights needed to be turn on
+The RPi will also take information such as the amount of items in the order and the time to completion to help with determining speed of order completion.
+This caused the need of a GUI that would allow for ease of use. The Slack API was decided as it was already integrated into the company software list and 
+the API had ease of rapid devolopement. 
+
+The RPi is programed using Python 2.7 and with small changes will work for Python 3. The was determined to be a good choice in languages as it allows for 
+future improvments because of the learning curve to learn basics of Python. The Ardiuno code is writen in Embedded C as that is the native language for 
+those processors and allows of a small code footprint compared to the Python code on the RPi. 
+
+Expansion on the RPi code can be done easily as it was designed with expansion in mind and adaption to any changes to sub systems. 
+
+Slack interface uses SlackBots to send files to users that request files. This is done through low level string pattern recognition. If auser types 
+@pick2ligh_username and sends a command it will responsed with the correct response. The commands are:
+
+shutdown to shutdown RPi
+restart to restart RPi
+send to have RPi send files to user
+update to have RPi update its system
+cpu to recieve percent of CPU used
+memory or ram to recieve percent of ram used
+temperture to recieve temperture data
+cancel to cancel shutdown or restart
