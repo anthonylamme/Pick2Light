@@ -1,3 +1,11 @@
+/*
+Pick2Light.cpp 
+used with Pick2Light.h to create a library that will run the pick-to-light system with 8 arduinos and one RPi
+See notes for further discription of overall system functionality.
+
+Code is a variation of the work of several C lirbaries modified to perform task. The limitation of current library 
+is that there are only 3 soft i2c buses enabled. If further expansion is needed then additional code will be need to be added
+*/
 #include <avr/pgmspace.h>
 
 #include "Pick2Light.h"
@@ -12,15 +20,18 @@
 #define _swap_int16_t(a, b) { int16_t t = a; a = b; b = t; }
 #endif
 
-SlowSoftWire i2c0;
-SlowSoftWire i2c1;
-SlowSoftWire i2c2;
+SlowSoftWire i2c0; //software i2c bus 1
+SlowSoftWire i2c1; //software i2c bus 2
+SlowSoftWire i2c2; //software i2c bus 3
 
 //void constructor
 Pick2Light::Pick2Light(void){
     
 }
-//constructor
+/*
+constructor:
+Creates Pick2Light Object need pin numbers as input in the form of SDA, SCL for bus 1, SDA, SCL for bus 2, SDA, SCL for bus 3
+*/
 Pick2Light::Pick2Light(uint8_t _SDA1,uint8_t _SCL1,uint8_t _SDA2,
                         uint8_t _SCL2,uint8_t _SDA3,uint8_t _SCL3){
     i2c0= SlowSoftWire(_SDA1,_SCL1);
@@ -30,17 +41,17 @@ Pick2Light::Pick2Light(uint8_t _SDA1,uint8_t _SCL1,uint8_t _SDA2,
     position = 0;
 }
 /*
-begins i2c buses and all 7 segment displays
+begins i2c buses and all 7 segment displays and MCPs to start system
 */
 void Pick2Light::begin(void){
-    i2c0.begin();
+    i2c0.begin(); //first bus begin from  software i2c Library
     i2c1.begin();
     i2c2.begin();
-    turnOnAllOscilators();
+    turnOnAllOscilators(); 
     Serial.println("all Osilators are on");
     setAllBrightness(15);
     allBlinkRate(HT16K33_BLINK_OFF);
-    for(int i=0;i<3;i++){        
+    for(int i=0;i<3;i++){//sends signal to MCP to assign the pin numbers to either inputs or outputs     
         // set defaults!
         // all inputs on port A and B
         writeRegister(MCP23017_IODIRA,0xff,MCP23017_ADDR[i]);
@@ -72,6 +83,12 @@ void Pick2Light::begin(void){
     }
     Serial.println("Lights should be set");
 }
+/*
+Name:testBus
+Input: bus number wishing to test
+ouput: none
+Summary: This function will test the I2C bus t determine what is connected used for debugging
+*/
 void Pick2Light::testBus(int whichBus){
     byte error,address;
     int Dev=0;
@@ -179,7 +196,10 @@ void Pick2Light::testBus(int whichBus){
     }
 }
 /*
-Tests connection with I2C Channels
+Name: testConnection
+Input: None
+Output: None
+Summary: Checks all busses using testBus function
 */
 void Pick2Light::testConnection(void){
     Serial.println(F("Scanning I2C bus (7-bit addresses) ..."));
@@ -191,7 +211,12 @@ void Pick2Light::testConnection(void){
 /*
 Functions for 7 segment control
 */
-
+/*
+Name: TurnOnAllOscilators
+Input: None
+Output: None
+Summary: Turns on all 7 segment displays oscilators so they can recieve data
+*/
 void Pick2Light::turnOnAllOscilators(void){
     for(int i=0;i<8;i++){
         i2c0.beginTransmission(Display_i2c_addr[i]);
@@ -207,7 +232,12 @@ void Pick2Light::turnOnAllOscilators(void){
         i2c2.endTransmission();
     }
 }
-
+/*
+Name: setAllBrightness
+Input: amount of brightness 15 is max, 0 is minimum
+Output: None
+Summary: Sets brightness for the 7 segments displays
+*/
 void Pick2Light::setAllBrightness(uint8_t b){
     if (b > 15) b = 15;//15 max
     for(int i=0;i<8;i++){
@@ -224,7 +254,12 @@ void Pick2Light::setAllBrightness(uint8_t b){
         i2c2.endTransmission();
     }
 }
-
+/*
+Name: allBlinkRate
+Input: Blink rate of LEDS used to save on power
+Output: None
+Summary: Sets blink rate for the 7 segments displays 3 max
+*/
 void Pick2Light::allBlinkRate(uint8_t b){
     if (b > 3) b = 0; // turn off if not sure
     for(int i=0;i<8;i++){
@@ -241,7 +276,12 @@ void Pick2Light::allBlinkRate(uint8_t b){
         i2c2.endTransmission();
     }
 }
-
+/*
+Name: writeDisplay
+Input: i2c address and the bus it is on
+Output: None
+Summary: sends command to write to the Display what is in the displaybuffer
+*/
 void Pick2Light::writeDisplay(uint8_t i2c_addr,uint8_t i2cType){
     switch(i2cType){
       case 0:{
@@ -290,8 +330,12 @@ void Pick2Light::writeDisplay(uint8_t i2c_addr,uint8_t i2cType){
       }
   }
 }
-
-//clears display buffer need writeDisplay afterwards
+/*
+Name: clear
+Input: None
+Output: None
+Summary: clears display buffer need writeDisplay afterwards
+*/
 void Pick2Light::clear(void){
     for (uint8_t i=0; i<8; i++) {
         displaybuffer[i] = 0;
@@ -300,70 +344,149 @@ void Pick2Light::clear(void){
 /*
 7 segment only control
 */
+/*
+Name: print
+Input: decimal with the base of the number ie hex,dec, ect.
+Output: None
+Summary: Places input into display buffer
+*/
 void Pick2Light::print(unsigned long n, int base){
   if (base == 0) write(n);
   else printNumber(n, base);
 }
-
+/*
+Name: print
+Input: Char with the base of the char ie hex,dec, ect.
+Output: None
+Summary: Places input into display buffer
+*/
 void Pick2Light::print(char c, int base){
   print((long) c, base);
 }
-
+/*
+Name: print
+Input: unsigned Char with the base of the char ie hex,dec, ect.
+Output: None
+Summary: Places input into display buffer
+*/
 void Pick2Light::print(unsigned char b, int base){
   print((unsigned long) b, base);
 }
-
+/*
+Name: print
+Input: Integer with the base of the char ie hex,dec, ect.
+Output: None
+Summary: Places input into display buffer
+*/
 void Pick2Light::print(int n, int base){
   print((long) n, base);
 }
-
+/*
+Name: print
+Input: Unsigned Integer with the base of the char ie hex,dec, ect.
+Output: None
+Summary: Places input into display buffer
+*/
 void Pick2Light::print(unsigned int n, int base){
   print((unsigned long) n, base);
 }
-
+/*
+Name: println
+Input: none
+Output: None
+Summary: moves position pointer to begining
+*/
 void  Pick2Light::println(void) {
   position = 0;
 }
 
+/*
+Name: println
+Input: Char and base
+Output: None
+Summary: writes input to displaybuffer and then moves position pointer to begining
+*/
 void  Pick2Light::println(char c, int base){
   print(c, base);
   println();
 }
-
+/*
+Name: println
+Input: unsigned Char and base
+Output: None
+Summary: writes input to displaybuffer and then moves position pointer to begining
+*/
 void  Pick2Light::println(unsigned char b, int base){
   print(b, base);
   println();
 }
-
+/*
+Name: println
+Input: integer and base
+Output: None
+Summary: writes input to displaybuffer and then moves position pointer to begining
+*/
 void  Pick2Light::println(int n, int base){
   print(n, base);
   println();
 }
-
+/*
+Name: println
+Input: unsigned integer and base
+Output: None
+Summary: writes input to displaybuffer and then moves position pointer to begining
+*/
 void Pick2Light::println(unsigned int n, int base){
   print(n, base);
   println();
 }
-
+/*
+Name: println
+Input: Decimal and base
+Output: None
+Summary: writes input to displaybuffer and then moves position pointer to begining
+*/
 void  Pick2Light::println(long n, int base){
   print(n, base);
   println();
 }
-
+/*
+Name: println
+Input: unsigned decimal and base
+Output: None
+Summary: writes input to displaybuffer and then moves position pointer to begining
+*/
 void  Pick2Light::println(unsigned long n, int base){
   print(n, base);
   println();
 }
-
+/*
+Name: println
+Input: double and number of digits
+Output: None
+Summary: writes input to displaybuffer and then moves position pointer to begining
+*/
 void  Pick2Light::println(double n, int digits){
   print(n, digits);
   println();
 }
 
+/*
+Name: print
+Input: double and number of digits
+Output: None
+Summary: writes input to displaybuffer
+*/
 void  Pick2Light::print(double n, int digits){
   printFloat(n, digits);
 }
 
+/*
+Name: write
+Input: 8 bit number
+Output: the size of the sent information
+Summary: Function will send input to the display buffer and write it to the displays
+*/
 size_t Pick2Light::write(uint8_t c) {
 
   uint8_t r = 0;
@@ -381,19 +504,34 @@ size_t Pick2Light::write(uint8_t c) {
 
   return r;
 }
-
+/*
+Name: writeDigitRaw
+Input: 8 bit number, 8 bit bitmask
+Output: None
+Summary: Function will write to display buffer to the place holder discribed by bitmask
+*/
 void Pick2Light::writeDigitRaw(uint8_t d, uint8_t bitmask) {
   if (d > 4) return;
   displaybuffer[d] = bitmask;
 }
-
+/*
+Name: drawColon
+Input: boolean 
+Output: None
+Summary: Function turns on Colon for clock features
+*/
 void Pick2Light::drawColon(boolean state) {
   if (state)
     displaybuffer[2] = 0x2;
   else
     displaybuffer[2] = 0;
 }
-
+/*
+Name: writeColon
+Input: i2c address, i2c bus
+Output: None
+Summary: Places Colon in displayBuffer
+*/
 void Pick2Light::writeColon(uint8_t i2c_addr,uint8_t i2cType) {
     switch(i2cType){
       case 0:{
@@ -426,21 +564,42 @@ void Pick2Light::writeColon(uint8_t i2c_addr,uint8_t i2cType) {
       }
     }
 }
-
+/*
+Name: writeDigitNum
+Input: 8 bit value for digit, the number and if there is a dot
+Output: None
+Summary: writes to the displaybuffer to display digits where you want them and dots if wanted 
+*/
 void Pick2Light::writeDigitNum(uint8_t d, uint8_t num, boolean dot) {
   if (d > 4) return;
 
   writeDigitRaw(d, numbertable[num] | (dot << 7));
 }
-
+/*
+Name: print
+Input: decimal, base 
+Output: None
+Summary: Function sends input to displaybuffer
+*/
 void Pick2Light::print(long n, int base){
   printNumber(n, base);
 }
 
+/*
+Name: printNumber
+Input: decimal, base 
+Output: None
+Summary: Function sends input to displaybuffer
+*/
 void Pick2Light::printNumber(long n, uint8_t base){
     printFloat(n, 0, base);
 }
-
+/*
+Name: printFloat
+Input: decimal, fraction digits, base
+Output: None
+Summary: Function sends input to displaybuffer
+*/
 void Pick2Light::printFloat(double n, uint8_t fracDigits, uint8_t base) { 
   uint8_t numericDigits = 4;   // available digits on display
   boolean isNegative = false;  // true if the number is negative
@@ -501,29 +660,42 @@ void Pick2Light::printFloat(double n, uint8_t fracDigits, uint8_t base) {
   }
 }
 
+/*
+Name: printError
+Input: None
+Output: None
+Summary: Function sends ierror message to displays
+*/
 void Pick2Light::printError(void) {
   for(uint8_t i = 0; i < SEVENSEG_DIGITS; ++i) {
     writeDigitRaw(i, (i == 2 ? 0x00 : 0x40));
   }
 }
 
-/**
- * Bit number associated to a give Pin
- */
+/*
+Name: bitForPin
+Input: pin number
+Output: uint8_t
+Summary: Function returns Bit number associated to a give Pin
+*/
 uint8_t Pick2Light::bitForPin(uint8_t pin){
 	return pin%8;
 }
-
-/**
- * Register address, port dependent, for a given PIN
- */
+/*
+Name: regForPin
+Input: pin number,Port A address and Port B address
+Output: uint8_t
+Summary: Function returns Register address, port dependent, for a given PIN
+*/
 uint8_t Pick2Light::regForPin(uint8_t pin, uint8_t portAaddr, uint8_t portBaddr){
 	return(pin<8) ?portAaddr:portBaddr;
 }
-
-/**
- * Reads a given register
- */
+/*
+Name: readRegiister
+Input: address of interest, i2c address 
+Output: uint8_t
+Summary: Function returns values in sent register
+*/
 uint8_t Pick2Light::readRegister(uint8_t addr,uint8_t i2caddr){
 	// read the current GPINTEN
     i2c0.beginTransmission(MCP23017_ADDRESS | i2caddr);
@@ -532,11 +704,12 @@ uint8_t Pick2Light::readRegister(uint8_t addr,uint8_t i2caddr){
     i2c0.requestFrom(MCP23017_ADDRESS | i2caddr, 1);
     return i2c0.read();
 }
-
-
-/**
- * Writes a given register
- */
+/*
+Name: writeRegister
+Input: register address, value to be written, i2c address
+Output: None
+Summary: Function writes to a register a command value
+*/
 void Pick2Light::writeRegister(uint8_t regAddr, uint8_t regValue, uint8_t i2caddr){
     i2c0.beginTransmission(MCP23017_ADDRESS | i2caddr);
     i2c0.write((uint8_t) regAddr);
@@ -544,12 +717,14 @@ void Pick2Light::writeRegister(uint8_t regAddr, uint8_t regValue, uint8_t i2cadd
     i2c0.endTransmission();
     
 }
-
-/**
- * Helper to update a single bit of an A/B register.
- * - Reads the current register value
- * - Writes the new register value
- */
+/*
+Name: updateRegisterBit
+Input: register address, value to be written, i2c address
+Output: None
+Summary: Function is a helper function to update a single bit of an A/B register.
+- Reads the current register value
+- Writes the new register value
+*/
 void Pick2Light::updateRegisterBit(uint8_t pin, uint8_t pValue, uint8_t portAaddr, uint8_t portBaddr, uint8_t i2caddr) {
 	uint8_t regValue;
 	uint8_t regAddr=regForPin(pin,portAaddr,portBaddr);
@@ -561,17 +736,21 @@ void Pick2Light::updateRegisterBit(uint8_t pin, uint8_t pValue, uint8_t portAadd
 
 	writeRegister(regAddr,regValue,i2caddr);
 }
-
-/**
- * Sets the pin mode to either INPUT or OUTPUT
- */
+/*
+Name: pinMode
+Input: pin number,input/output, i2c address
+Output: None
+Summary: sents pins to either input or output
+*/
 void Pick2Light::pinMode(uint8_t p, uint8_t d, uint8_t i2caddr) {
 	updateRegisterBit(p,(d==INPUT),MCP23017_IODIRA,MCP23017_IODIRB, i2caddr);
 }
-
-/**
- * Reads all 16 pins (port A and B) into a single 16 bits variable.
- */
+/*
+Name: readGPIOAB
+Input: i2c address
+Output: 16 bit result
+Summary: Reads all 16 pins (port A and B) into a single 16 bits variable.
+*/
 uint16_t Pick2Light::readGPIOAB(uint8_t i2caddr) {
 	uint16_t ba = 0;
 	uint8_t a;
@@ -589,11 +768,12 @@ uint16_t Pick2Light::readGPIOAB(uint8_t i2caddr) {
 
 	return ba;
 }
-
-/**
- * Read a single port, A or B, and return its current 8 bit value.
- * Parameter b should be 0 for GPIOA, and 1 for GPIOB.
- */
+/*
+Name: readGPIO
+Input: i2c address
+Output: 16 bit result
+Summary: Read a single port, A or B, and return its current 8 bit value. Parameter b should be 0 for GPIOA, and 1 for GPIOB.
+*/
 uint8_t Pick2Light::readGPIO(uint8_t b, uint8_t i2caddr) {
     
     i2c0.beginTransmission(MCP23017_ADDRESS | i2caddr);
@@ -606,10 +786,12 @@ uint8_t Pick2Light::readGPIO(uint8_t b, uint8_t i2caddr) {
     return i2c0.read();
 	// read the current GPIO output latches
 }
-
-/**
- * Writes all the pins in one go. This method is very useful if you are implementing a multiplexed matrix and want to get a decent refresh rate.
- */
+/*
+Name: writeGPIOAB
+Input: 16 bit number to write to pins, i2c address
+Output: none
+Summary: Writes all the pins in one go. first 8 is Port B, and second 8 is Port A
+*/
 void Pick2Light::writeGPIOAB(uint16_t ba, uint8_t i2caddr) {
     i2c0.beginTransmission(MCP23017_ADDRESS | i2caddr);
     i2c0.write(MCP23017_GPIOA);
@@ -617,7 +799,12 @@ void Pick2Light::writeGPIOAB(uint16_t ba, uint8_t i2caddr) {
     i2c0.write((uint8_t)(ba >> 8));
     i2c0.endTransmission();
 }
-
+/*
+Name: digitalWrite
+Input: pin number, one or zero, i2c address
+Output: none
+Summary: sents pin to either 1 or 0
+*/
 void Pick2Light::digitalWrite(uint8_t pin, uint8_t d, uint8_t i2caddr) {
 	uint8_t gpio;
 	uint8_t bit=bitForPin(pin);
@@ -634,11 +821,21 @@ void Pick2Light::digitalWrite(uint8_t pin, uint8_t d, uint8_t i2caddr) {
 	regAddr=regForPin(pin,MCP23017_GPIOA,MCP23017_GPIOB);
 	writeRegister(regAddr,gpio,i2caddr);
 }
-
+/*
+Name: pullUp
+Input: pin,0 or 1, address
+Output: none
+Summary: turns on pull up resistor on pin
+*/
 void Pick2Light::pullUp(uint8_t p, uint8_t d, uint8_t i2caddr) {
 	updateRegisterBit(p,d,MCP23017_GPPUA,MCP23017_GPPUB,i2caddr);
 }
-
+/*
+Name: digitalRead
+Input: pin number, i2c address
+Output: value of pin uint8_t
+Summary: returns the value of the requested pin
+*/
 uint8_t Pick2Light::digitalRead(uint8_t pin, uint8_t i2caddr) {
 	uint8_t bit=bitForPin(pin);
 	uint8_t regAddr=regForPin(pin,MCP23017_GPIOA,MCP23017_GPIOB);
