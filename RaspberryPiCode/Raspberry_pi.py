@@ -1,11 +1,12 @@
 
 """
 This Script will be the script that will be running the arduinos with the
-Raspberry PI. It will be using I2C communication with Arduino's 1 through Eight
+Raspberry PI. It will be using I2C communication with Arduino's 1 through 8
 It will be using a usb Scanner to scan barcodes and send data to the network
 The network will send a JSON file to the Pi which the Pi will determine which
 Arduinos will be used.
 """
+#GPIO Difinitions
 #GPIO2=SDA1 PIN3
 #GPIO3=SCL1 PIN5
 
@@ -284,6 +285,9 @@ def checkArduino():
         return True
     else:
         return False
+"""
+resets Arduinos back to zero
+"""
 def resetArduinos(lights=[],item=[],Maplights=[]):
     for x in range(0,len(arduinoAddresses)):
         writeCommand(arduinoAddresses[x],turnOff,lights,item,Maplights)
