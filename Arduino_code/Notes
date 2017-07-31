@@ -4,3 +4,28 @@ Arduino Code has been tested and worked under test conditions. Arduino's 1-7 wil
 
 Arduino 8 needs to be tested just to ensure working prototype
 
+Arduino Code Summary and how it works with the System:
+
+The arduinos control thier own section of the Cell.
+
+A1 controls the fist 24 items on the top row. 
+A2 controls the fist 24 items on the next row
+A3 controls the fist 24 items on the next row
+A4 controls the fist 24 items on the next row
+A5 controls the fist 24 items on the next row
+A6 controls the fist 24 items on the next row
+A7 controls the fist 24 items on the bottom row
+A8 controls the remainder items on each row
+
+This was determined based on software i2c capablities as there can only be 8 7 segment displays per i2c bus. The physical design also played a role
+as the thought of separating a bus from  on row to the begining of the next seemed to make things unnessarly complicated. In truth the design could use less Arduinos
+but if done will case a increase in complexity of code and algorithms used to control the lights,buttons and 7 segments displays. but with the current layout expansion
+without much change in the code as A8 is not completely filled with lights, buttons or 7 segment displays. The other expansion can be performed by additonal arduinos
+as the main controller  is the RPi(Raspberry PI) which can have 103 devices placed on its I2C bus. This means that if sensors or other instaments were added 
+to system they would be easy to install as a add on the only changes would need to be in the overall code of the system. 
+
+Notes: The limitation of software i2c is that there has to be 2 pins for each additional i2c connection and they can't be connected to another source
+This leaves to a max of 6 i2c buses that can be made with current knowledge of the arduino UNO being used. This can be bypassed if need by replacing the 
+shield with just the chip and creating a fix sytem. The downside of this approuch is that it will not be adaptable if something was to go wrong. This would mean if something 
+was to fail then  the entire circuit would need replacements where as current system it may just take changing the code to use different pins. 
+This belief is founded on incidents that had happend with the robotic arm project as a surge cause two pins on  the arduino to stop working.
