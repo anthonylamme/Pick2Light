@@ -1,1 +1,9 @@
 Test data used to determine if Pick2Light system is working
+
+
+Exmaple.json is used to test json retrieval program 
+MasterTester.ino is used to test single row arduino code
+PowerCheck.json is used to determine max power used by a row/system
+Row1.json tests the first row
+TestRun7Segment.ino is used to test 7 segement displays
+TestingPick2light.ino is used to test sytem based on one arduino
