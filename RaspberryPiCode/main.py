@@ -16,9 +16,9 @@ Quantatity=[]#quantatity each item with index being item length should be 182 it
 Lights=[]#182 bit number for all the lights
 sendLights=[]#the list of 24 bit numbers to turn on lights
 #File pathways
-ItemListpathway='/home/pi/P2LightData/ItemList.csv'#CSV for item placement array
-JSONpathway='/home/pi/P2LightData/JSONData/Order.json'#json file to pull from network
-filepathway='/home/pi/P2LightData/Data/' #file to send when asked
+ItemListpathway='/home/pi/SlackData/ItemList.csv'#CSV for item placement array
+JSONpathway='/home/pi/SlackData/JSONData/Order.json'#json file to pull from network
+filepathway='/home/pi/SlackData/Data/' #file to send when asked
 
 #system set up
 P2L.gpioSetup() 
